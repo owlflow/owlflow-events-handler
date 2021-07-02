@@ -9,6 +9,7 @@
   "author": "ngoyal16",
   "license": "ISC",
   "devDependencies": {
+    "@owlflow/common": "^1.2.0",
     "aws-sdk": "^2.505.0",
     "bluebird": "^3.5.5",
     "crypto": "^1.0.1",

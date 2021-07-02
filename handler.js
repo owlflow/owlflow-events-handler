@@ -2,8 +2,10 @@
 // TODO: Add an event bus to publish the data for other nodes
 'use strict'
 
-import EventPublisher from './src/lib/EventPublisher'
-import FlowNodeContext from './src/lib/FlowNodeContext'
+import {
+  EventPublisher,
+  FlowNodeContext
+} from '@owlflow/common'
 
 const asyncForEach = async (array, cb) => {
   for (let index = 0; index < array.length; index++) {
