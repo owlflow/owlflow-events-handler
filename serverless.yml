@@ -1,0 +1,79 @@
+service: owlflow-events
+
+frameworkVersion: ">=2.0.0 <3.0.0"
+
+plugins:
+  - serverless-bundle
+
+custom:
+  defaultStage: dev
+  defaultRegion: us-east-1
+  currentStage: ${opt:stage, self:custom.defaultStage}
+  currentRegion: ${opt:region, self:custom.defaultRegion}
+  resourcesPrefix: ${self:service}-${self:custom.currentStage}
+  config: ${file(./config.${self:custom.currentStage}.json)}
+  deploymentBucket: ${self:custom.config.DEPLOYMENT_BUCKET}
+  bundle:
+    sourcemaps: false
+    linting: false
+    packager: yarn
+    forceExclude:
+      - aws-sdk
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${self:custom.currentStage}
+  region: ${self:custom.currentRegion}
+  timeout: 30
+  logRetentionInDays: 14
+  endpointType: regional
+  eventBridge:
+    useCloudFormation: true
+  deploymentBucket:
+    name: ${self:custom.deploymentBucket}-${self:provider.region}
+  environment:
+    SERVERLESS_REGION: ${self:custom.config.REGION}
+    LOG_LEVEL: ${self:custom.config.LOG_LEVEL}
+    DEBUG: ${self:custom.config.DEBUG}
+    OWLHUB_EVENT_BUS_NAME: ${self:custom.config.OWLHUB_EVENT_BUS_NAME}
+    GET_FLOW_CONTEXT_FUNCTION: ${self:custom.config.GET_FLOW_CONTEXT_FUNCTION}
+    GET_FLOW_NODE_CONTEXT_FUNCTION: ${self:custom.config.GET_FLOW_NODE_CONTEXT_FUNCTION}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - events:PutEvents
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - lambda:InvokeFunction
+      Resource:
+        - arn:aws:lambda:${self:custom.config.REGION}:*:${self:custom.config.GET_FLOW_CONTEXT_FUNCTION}
+        - arn:aws:lambda:${self:custom.config.REGION}:*:${self:custom.config.GET_FLOW_NODE_CONTEXT_FUNCTION}
+
+package:
+  excludeDevDependencies: true
+  individually: false
+  exclude:
+    - .gitignore
+    - .git/**
+
+functions:
+  OWLFlowFilterV1Handler:
+    handler: handler.owlFlowFilterV1Handler
+    name: ${self:custom.resourcesPrefix}-owlFlowFilterV1Handler
+    layers:
+      - ${self:custom.config.COMMON_LIB_LAYER_ARN}
+    events:
+      - eventBridge:
+          eventBus: ${self:custom.config.OWLHUB_EVENT_BUS_ARN}
+          pattern:
+            source:
+              - owlhub.owlflow
+            detail:
+              event:
+                - owlflow.hooks
+              eventSource:
+                - hooks.owlflow.io
+              consumerAPI:
+                - OWLFlowFilterV1

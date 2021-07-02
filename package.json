@@ -1,0 +1,21 @@
+{
+  "name": "owlflow-events-handler",
+  "version": "0.0.2",
+  "description": "events-handler",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ngoyal16",
+  "license": "ISC",
+  "devDependencies": {
+    "aws-sdk": "^2.505.0",
+    "bluebird": "^3.5.5",
+    "crypto": "^1.0.1",
+    "moment": "^2.24.0",
+    "omit-empty": "^1.0.0",
+    "serverless-bundle": "^4.3.1",
+    "uuid": "^3.3.2",
+    "winston": "^3.2.1"
+  }
+}
